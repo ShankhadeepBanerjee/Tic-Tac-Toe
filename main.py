@@ -1,6 +1,6 @@
 import pygame, sys
 from pygame.locals import *
-from Gametools_exp import  Cell, Grid, Screen
+from Gametools import  Cell, Grid, Screen
 
 global Surf, BLUE, DARK_BLUE, LIGHT_BLUE, GREEN ,White, Black, Right_click, mousex, mousey
 
@@ -30,18 +30,12 @@ Winner = False
 def game():
 
 	while True:
-		Right_click = False
 
 		Surf.fill(White)
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				pygame.quit()
 				sys.exit()
-
-			elif event.type == pygame.MOUSEBUTTONDOWN:
-				if event.button == 1:
-					Right_click = True
-					mousex,mousey = pygame.mouse.get_pos()
 
 		
 		Winner_found = main_grid.Check_win()
