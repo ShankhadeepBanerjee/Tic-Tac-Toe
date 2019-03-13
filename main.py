@@ -1,6 +1,6 @@
 import pygame, sys
 from pygame.locals import *
-from Gametools_exp import  Cell, Grid, Screen, Intro_screen, Game_over_screen
+from Gametools import  Cell, Grid, Screen, Intro_screen, Game_over_screen
 
 global Surf, BLUE, DARK_BLUE, LIGHT_BLUE, GREEN ,White, Black, Right_click, mousex, mousey
 
@@ -53,12 +53,18 @@ def game():
 		else:
 			if not Winner_found:
 				main_game.show()
-				Winner_found = main_game.Check_win()
+				Winner_found = main_game.winner
 				if Winner_found:
 					Overed = True
 					Play_again = False
+					main_game.winner = ""
+
 			elif Overed and not Play_again:
 				Over.show()
+				if Winner_found:
+					Over.show_winner(Winner_found)
+				else:
+					Over.show_winner()
 				Play_again = Over.get_state()
 				if Play_again:
 					Overed = False

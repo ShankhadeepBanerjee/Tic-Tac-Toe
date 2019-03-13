@@ -10,7 +10,7 @@ LIGHT_BLUE = (5,5,255)
 DARK_BLUE = (5,5,155)
 BLUE = (0,0,255)
 GREEN = (0,255,0)
-
+RED = (255, 0, 0)
 
 
 
@@ -59,8 +59,7 @@ class Cell:
 				if self.clicked and self.text == "QUIT":
 					pygame.quit()
 					sys.exit()
-				# if self.clicked:
-				# 	print("Yes")
+				
 				
 		else:
 			self.color_in = DARK_BLUE
@@ -82,7 +81,7 @@ class Cell:
 			textRectObj = textObj.get_rect()                 
 			textRectObj.topleft = (self.left+10, self.top+2)                      
 			self.Surface.blit(textObj,textRectObj)
-			#self.width = 100
+			
 
 
 		pygame.draw.rect(self.Surface, self.color_out, (self.left, self.top, self.width, self.hieght), self.border)
@@ -118,6 +117,7 @@ class Grid:
 
 		self.moves = {"_X_": "_O_", "_O_":"_X_"}
 		self.next_move = "_O_"
+		self.winner = ""
 
 
 
@@ -150,8 +150,11 @@ class Grid:
 
 			if_all_equal = (self.cell_values[c1-1] == self.cell_values[c2-1] and  self.cell_values[c2-1] == self.cell_values[c3-1])
 			if if_anyone_present and if_all_equal:
-				#self.Reset()
 				return(self.cell_values[c1-1])
+
+	def chance_end(self):
+		if not ("" in self.cell_values):
+			return("Nobody")
 
 
 
@@ -161,7 +164,6 @@ class Grid:
 				if not cell.text:
 					self.next_move = self.moves[self.next_move]
 					cell.text = self.next_move
-					
 				else:
 					pass
 			elif cell.clicked and cell.isButton: 
@@ -179,17 +181,14 @@ class Grid:
 			cell.show()
 
 		self.cell_values = [i.text for  i in self.cells[:-2]]
-
-
-
-
-# Play_again = Cell(Surf, 120, 250, 200, 30, text = "Play")
-# QUIT = Cell(Surf, 250, 250, 60, 30, text= "QUIT")
+		self.winner = self.Check_win()
+		if not self.winner:
+			self.winner = self.chance_end()
 
 
 class Screen(object):
-	def __init__(self,Surf):
-		self.Surf = Surf
+	def __init__(self,Surface):
+		self.Surface = Surface
 
 		self.cells = []
 
@@ -200,19 +199,15 @@ class Screen(object):
 		
 	def show(self):
 		for i,cell in enumerate(self.cells):
-			# if cell.text == "QUIT" and cell.clicked:
-			# 	self.Quit()
 			cell.show()
-			# if cell.clicked:
-			# 	print(self.commands[cell.text])
 
 
 class Intro_screen(Screen):
 
 	def __init__(self, Surface):
 		super().__init__(Surface)
-		self.Play = Cell(self.Surf, 100, 250, 130, 30, text = "Play")
-		self.QUIT = Cell(self.Surf, 250, 250, 80, 30, text= "QUIT")
+		self.Play = Cell(self.Surface, 100, 250, 80, 30, text = "Play")
+		self.QUIT = Cell(self.Surface, 250, 250, 80, 30, text= "QUIT")
 		self.cells = [self.Play, self.QUIT]
 
 	def get_state(self):
@@ -227,8 +222,9 @@ class Game_over_screen(Screen):
 
 	def __init__(self, Surface):
 		super().__init__(Surface)
-		self.Play_again = Cell(self.Surf, 100, 250, 130, 30, text = "Play again")
-		self.QUIT = Cell(self.Surf, 250, 250, 80, 30, text= "QUIT")
+		self.Winner = "Nobody"
+		self.Play_again = Cell(self.Surface, 100, 250, 135, 30, text = "Play again")
+		self.QUIT = Cell(self.Surface, 250, 250, 80, 30, text= "QUIT")
 		self.cells = [self.Play_again, self.QUIT]
 		
 
@@ -239,11 +235,22 @@ class Game_over_screen(Screen):
 		else:
 			return(False)
 
-
-
-
-	
-
+	def show_winner(self,winner = "Nobody"):
+		if not winner == "Nobody":
+			self.Winner = winner
+			fontObj = pygame.font.Font("ariali.ttf", 50)
+			textObj = fontObj.render(self.Winner+" Won the Game!!", True, RED) 
+			textRectObj = textObj.get_rect()                 
+			textRectObj.topleft = (10,120)                      
+			self.Surface.blit(textObj,textRectObj)
+		else:
+			self.Winner = winner
+			fontObj = pygame.font.Font("ariali.ttf", 40)
+			textObj = fontObj.render(self.Winner+" Won the Game!!", True, RED) 
+			textRectObj = textObj.get_rect()                 
+			textRectObj.topleft = (20,120)                      
+			self.Surface.blit(textObj,textRectObj)
+			
 
 
 """For Testing Purposes"""
