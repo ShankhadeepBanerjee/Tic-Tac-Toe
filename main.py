@@ -1,6 +1,6 @@
 import pygame, sys
 from pygame.locals import *
-from Gametools import  Cell, Grid, Screen
+from Gametools_exp import  Cell, Grid, Screen, Intro_screen, Game_over_screen
 
 global Surf, BLUE, DARK_BLUE, LIGHT_BLUE, GREEN ,White, Black, Right_click, mousex, mousey
 
@@ -16,18 +16,24 @@ BLUE = (0,0,255)
 GREEN = (0,255,0)
 
 
-FPS = 20
+FPS = 10
 
 pygame.init()
 display = (500, 500)
 #display = (1000,1000)
 Surf = pygame.display.set_mode(display)
 
-main_grid = Grid(Surf)
-Finished = Screen(Surf)
-Winner = False
+
+main_game = Grid(Surf)
+Intro = Intro_screen(Surf)
+Over = Game_over_screen(Surf)
+
 
 def game():
+	Winner_found = False
+	Started = False
+	Play_again = False
+	Overed = False
 
 	while True:
 
@@ -37,14 +43,29 @@ def game():
 				pygame.quit()
 				sys.exit()
 
-		
-		Winner_found = main_grid.Check_win()
 
-		if Winner_found:
-			Finished.show()
+		if not Started:
+			Intro.show()
+			Started = Intro.get_state()
+			if Started:
+				pygame.time.delay(300)
+
 		else:
-			main_grid.show()
-		
+			if not Winner_found:
+				main_game.show()
+				Winner_found = main_game.Check_win()
+				if Winner_found:
+					Overed = True
+					Play_again = False
+			elif Overed and not Play_again:
+				Over.show()
+				Play_again = Over.get_state()
+				if Play_again:
+					Overed = False
+					Winner_found = False
+					main_game.Reset()
+					pygame.time.delay(300)
+			
 
 		pygame.display.update()
 		fpsclock.tick(FPS)

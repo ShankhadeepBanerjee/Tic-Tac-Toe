@@ -1,5 +1,4 @@
 #This is a Script containing tools for Tic-tac-toe Game
-#Have to make Robust Unit Architecture
 
 import pygame, sys
 from pygame.locals import *
@@ -12,13 +11,12 @@ DARK_BLUE = (5,5,155)
 BLUE = (0,0,255)
 GREEN = (0,255,0)
 
-global moves, next_move
-moves = {"_X_": "_O_", "_O_":"_X_"}
-next_move = "_O_"
+
+
 
 class Cell:
 
-	def __init__(self, Surface, left, top, width, hieght, border = 1, text = ""):#, clickable = False):
+	def __init__(self, Surface, left, top, width, hieght, border = 1, text = ""):
 		self.Surface = Surface
 		self.top = top
 		self.left = left
@@ -29,7 +27,8 @@ class Cell:
 		self.bottom = self.top + self.hieght
 		self.border = border
 		self.clicked = False
-		self.color = DARK_BLUE
+		self.color_in = DARK_BLUE
+		self.color_out = LIGHT_BLUE
 
 		if self.text in ("_X_", "_O_", ""):
 			self.isButton = False
@@ -50,21 +49,26 @@ class Cell:
 		mousex,mousey = pygame.mouse.get_pos()
 
 		if (self.left < mousex < self.left + self.width) and (self.top < mousey < self.top + self.hieght):
-			self.color = LIGHT_BLUE
+			self.color_in = LIGHT_BLUE
 			if not self.isButton and not self.clicked:
 				self.clicked = pygame.mouse.get_pressed()[0]
-				#print("C")
+				
 
 			elif self.isButton:
 				self.clicked = pygame.mouse.get_pressed()[0]
-				#print("B")
+				if self.clicked and self.text == "QUIT":
+					pygame.quit()
+					sys.exit()
+				# if self.clicked:
+				# 	print("Yes")
+				
 		else:
-			self.color = DARK_BLUE
+			self.color_in = DARK_BLUE
 
-	def show_cell(self):
+	def show(self):
 		self.check_if_clicked_or_hovered()
 
-		pygame.draw.rect(self.Surface, self.color, (self.left, self.top, self.width, self.hieght))
+		pygame.draw.rect(self.Surface, self.color_in, (self.left, self.top, self.width, self.hieght))
 			
 		if self.text == "_X_":
 			self.symbol_x(self.left, self.top)
@@ -73,22 +77,20 @@ class Cell:
 		elif self.text == "":
 			pass
 		else:
-			fontObj = pygame.font.Font("ariali.ttf", 25)#self.hieght)
+			fontObj = pygame.font.Font("ariali.ttf", 25)
 			textObj = fontObj.render(self.text, True, White) 
 			textRectObj = textObj.get_rect()                 
 			textRectObj.topleft = (self.left+10, self.top+2)                      
 			self.Surface.blit(textObj,textRectObj)
-			self.width = 100
+			#self.width = 100
 
 
-		pygame.draw.rect(self.Surface, BLUE, (self.left, self.top, self.width, self.hieght), self.border)
+		pygame.draw.rect(self.Surface, self.color_out, (self.left, self.top, self.width, self.hieght), self.border)
 		
 		
 class Grid:
-	#global Right_click
-	def __init__(self, Surface):#, Right_click): #This
+	def __init__(self, Surface):
 		self.Surface = Surface
-		#self.Right_click = Right_click
 		self.Top, self.Left = 5, 5
 		self.Width = 351
 		self.Hieght = 489
@@ -103,7 +105,7 @@ class Grid:
 		self.cells = [Cell(self.Surface, self.Top*i + self.cell_width * i, self.Left*j + self.cell_hieght * j, self.cell_width, self.cell_hieght, 5) for j in range(self.grid_dimension_cell) for i in range(self.grid_dimension_cell)]
 
 		
-		self.Buttons = [Cell(self.Surface, self.Right + 20, 250, 60, 30, text = "RESET"), Cell(self.Surface, self.Right + 20, 280, 60, 30, text= "QUIT")]
+		self.Buttons = [Cell(self.Surface, self.Right + 20, 250, 100, 30, text = "RESET"), Cell(self.Surface, self.Right + 20, 280, 100, 30, text= "QUIT")]
 
 		self.commands = {
 						"RESET": self.Reset,
@@ -117,13 +119,6 @@ class Grid:
 		self.moves = {"_X_": "_O_", "_O_":"_X_"}
 		self.next_move = "_O_"
 
-		#self.winner = ""
-
-	def game_over_state(self):
-		# self.cell_values = [i.text= "" for  i in self.cells[:-2]]
-		for cell in self.cells[:-2]:
-			cell.text = ""
-			cell.clicked = False
 
 
 	def Reset(self):
@@ -155,7 +150,7 @@ class Grid:
 
 			if_all_equal = (self.cell_values[c1-1] == self.cell_values[c2-1] and  self.cell_values[c2-1] == self.cell_values[c3-1])
 			if if_anyone_present and if_all_equal:
-				self.game_over_state()
+				#self.Reset()
 				return(self.cell_values[c1-1])
 
 
@@ -179,83 +174,134 @@ class Grid:
 	def show(self):
 		
 		self.update()
-		#print([i.text for i in self.cells])
 
 		for i,cell in enumerate(self.cells):
-			cell.show_cell()
+			cell.show()
 
 		self.cell_values = [i.text for  i in self.cells[:-2]]
 
 
 
-class Screen:
+
+# Play_again = Cell(Surf, 120, 250, 200, 30, text = "Play")
+# QUIT = Cell(Surf, 250, 250, 60, 30, text= "QUIT")
+
+
+class Screen(object):
 	def __init__(self,Surf):
 		self.Surf = Surf
-		self.Play_again = Cell(self.Surf, 120, 250, 200, 30, text = "Play")#, clickable = True)
-		self.QUIT = Cell(self.Surf, 250, 250, 60, 30, text= "QUIT")#, clickable = True)
 
-		self.cells = [self.Play_again, self.QUIT]
+		self.cells = []
 
+
+	def Quit(self):
+		pygame.quit()
+		sys.exit()
+		
 	def show(self):
 		for i,cell in enumerate(self.cells):
-			cell.show_cell()
+			# if cell.text == "QUIT" and cell.clicked:
+			# 	self.Quit()
+			cell.show()
+			# if cell.clicked:
+			# 	print(self.commands[cell.text])
+
+
+class Intro_screen(Screen):
+
+	def __init__(self, Surface):
+		super().__init__(Surface)
+		self.Play = Cell(self.Surf, 100, 250, 130, 30, text = "Play")
+		self.QUIT = Cell(self.Surf, 250, 250, 80, 30, text= "QUIT")
+		self.cells = [self.Play, self.QUIT]
+
+	def get_state(self):
+		if self.Play.clicked:
+			self.Play.clicked = False
+			return (True)
+		else:
+			return(False)
+
+
+class Game_over_screen(Screen):
+
+	def __init__(self, Surface):
+		super().__init__(Surface)
+		self.Play_again = Cell(self.Surf, 100, 250, 130, 30, text = "Play again")
+		self.QUIT = Cell(self.Surf, 250, 250, 80, 30, text= "QUIT")
+		self.cells = [self.Play_again, self.QUIT]
+		
+
+	def get_state(self):
+		if self.Play_again.clicked:
+			self.Play_again.clicked = False
+			return (True)
+		else:
+			return(False)
 
 
 
 
-def game():
-	global Surf, BLUE, DARK_BLUE, LIGHT_BLUE, GREEN ,White, Black, Right_click, mousex, mousey
-
-	Right_click = False
-	mousex,mousey = (False,False)
-
-	fpsclock = pygame.time.Clock()
-	Black = (0,0,0)
-	White = (255,255,255)
-	LIGHT_BLUE = (5,5,255)
-	DARK_BLUE = (5,5,155)
-	BLUE = (0,0,255)
-	GREEN = (0,255,0)
-
-
-	FPS = 30
-
-	pygame.init()
-	display = (500, 500)
-	#display = (1000,1000)
-	Surf = pygame.display.set_mode(display)
-
-
-	# main_grid = Grid()
-	# Finished = Screen()
-
-	c1 = Cell(Surf, 50, 100, 100, 30, border = 1, text = "Yes")#, clickable = True)
-	c2 = Cell(Surf, 100, 200, 100, 30, border = 1, text = "")#, clickable = True)
-	c3 = Cell(Surf, 50, 150, 100, 30, border = 1, text = "No")#, clickable = True)
-
-	main = Grid(Surf)
-
-	winner = None
 	
 
-	while True:
-		Surf.fill(White)
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				pygame.quit()
-				sys.exit()
 
-			elif event.type == pygame.MOUSEBUTTONDOWN:
-				if event.button == 1:
-					mousex,mousey = pygame.mouse.get_pos()
 
-		# c1.show_cell()
-		# c2.show_cell()
-		# c3.show_cell()
-		main.show()
+"""For Testing Purposes"""
 
-		pygame.display.update()
-		fpsclock.tick(FPS)
 
-# if __name__ == "__main__":
-# 	game()
+# def game():
+# 	global Surf, BLUE, DARK_BLUE, LIGHT_BLUE, GREEN ,White, Black, Right_click, mousex, mousey
+
+# 	Right_click = False
+# 	mousex,mousey = (False,False)
+
+# 	fpsclock = pygame.time.Clock()
+# 	Black = (0,0,0)
+# 	White = (255,255,255)
+# 	LIGHT_BLUE = (5,5,255)
+# 	DARK_BLUE = (5,5,155)
+# 	BLUE = (0,0,255)
+# 	GREEN = (0,255,0)
+
+
+# 	FPS = 30
+
+# 	pygame.init()
+# 	display = (500, 500)
+# 	#display = (1000,1000)
+# 	Surf = pygame.display.set_mode(display)
+
+
+# 	# main_grid = Grid()
+# 	# Finished = Screen()
+
+# 	c1 = Cell(Surf, 50, 100, 100, 30, border = 1, text = "Yes")#, clickable = True)
+# 	c2 = Cell(Surf, 100, 200, 100, 30, border = 1, text = "")#, clickable = True)
+# 	c3 = Cell(Surf, 50, 150, 100, 30, border = 1, text = "No")#, clickable = True)
+
+# 	main = Grid(Surf)
+
+# 	winner = None
+	
+
+# 	while True:
+# 		Surf.fill(White)
+# 		for event in pygame.event.get():
+# 			if event.type == pygame.QUIT:
+# 				pygame.quit()
+# 				sys.exit()
+
+# 			elif event.type == pygame.MOUSEBUTTONDOWN:
+# 				if event.button == 1:
+# 					mousex,mousey = pygame.mouse.get_pos()
+
+# 		# c1.show_cell()
+# 		# c2.show_cell()
+# 		# c3.show_cell()
+# 		main.show()
+
+# 		pygame.display.update()
+# 		fpsclock.tick(FPS)
+
+# # if __name__ == "__main__":
+# # 	game()
